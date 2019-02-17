@@ -1,0 +1,79 @@
+---
+title: "CaseStudy_01"
+author: "Heindel Adu"
+date: "2/16/2019"
+output: html_document
+        keep_md: TRUE;
+---
+
+```{r setup, include=FALSE}
+library(tidyr)
+library(dplyr)
+```
+
+```{r}
+library(readr)
+Beers <- read_csv("Beers.csv")
+head(Beers)
+```
+
+```{r}
+Beers
+```
+```{r}
+library(readr)
+Breweries <- read_csv("Breweries.csv")
+```
+```{r}
+head(Breweries
+     )
+```
+
+```{r}
+summary(Beers)
+```
+```{r}
+summary(Breweries)
+```
+
+```{r}
+names(Beers)
+```
+```{r}
+names(Breweries)
+```
+```{r}
+Beers <- rename(Beers, Brew_ID = Brewery_id)
+names(Beers)
+```
+
+```{r}
+fullData <- full_join(Breweries, Beers, by = "Brew_ID")
+```
+
+```{r}
+fullData
+```
+```{r}
+names(fullData)
+```
+```{r}
+fullData <- rename(fullData, BreweryName = Name.x, BeerName = Name.y)
+names(fullData)
+```
+```{r}
+fullData %>%
+  group_by(State) %>%
+  summarise(count = n())
+
+```
+```{r}
+BrewStatesC <- Breweries%>%
+  group_by(State)%>%
+  summarise(count = n())
+```
+```{r}
+head(BrewStatesC)
+BrewStatesC
+plot(state, count)
+```
