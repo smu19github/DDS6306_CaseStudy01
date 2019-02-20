@@ -68,7 +68,7 @@ fullData
 names(fullData)
 ```
 ```{r}
-fullData <- rename(fullData, BreweryName = Name.x, BeerName = Name.y)
+fullData <- rename(fullData, BreweryName = Name.x, BeerName = Name.y) %>% write_csv(fullData)
 names(fullData)
 ```
 ```{r}
@@ -109,14 +109,14 @@ View(state.freq)
 ```
 
 ```{r}
-sDF<-data.frame(state.freq)
+sDF<-data.frame(state.freq) 
 names(sDF)
-sDF<- rename(sDF, State = Var1, NoBreweries=Freq)
+sDF<- rename(sDF, State = Var1, Brew_Count=Freq)
 ```
 
 ```{r}
 View(sDF)
-names(Breweries)
+names(sDF)
 ```
 #<br>
 ```{r}
@@ -132,3 +132,30 @@ p2 <-Breweries %>%
 subplot(p2) 
 ```
 #<br>
+```{r}
+names(sDF)
+qsDF<-sDF[sort(sDF$Brew_Count),]
+tsDF<-qsDF %>% 
+  tibble::as_tibble(qsDF)
+tail(tsDF)
+print(qsDF)
+```
+```{r}
+p3 <- sDF %>%
+  plot_ly(x = ~NoBreweries, y = ~State ) %>%
+  add_bars(marker = list(color = 'rgba(58, 71, 80, 0.6)')) %>%
+  layout(title = "Count of Brewereies")
+  
+subplot(p3)  
+```
+
+```{r}
+p4 <- qsDF %>%
+  plot_ly(x = ~Brew_Count, y = ~State ) %>%
+  add_bars(marker = list(color = 'rgba(58, 71, 80, 0.6)')) %>%
+  layout(title = "Count of Brewereies")
+  
+subplot(p3)  
+
+?add_bars
+```
