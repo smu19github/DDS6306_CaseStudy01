@@ -12,15 +12,22 @@ output:
 #<br>
 #
 
-#### Load the necessary library packages prior to loading the data. I used the library(tidyr) and library(dplyr) . This will not show the code in the markdown file output in html.
+#### Load the necessary library packages prior to loading the data. 
+#### Packages used include : 
+####   <em>  -tidyr
+####   <em>  -dplyr
+####   <em>  -plotly
+####      -plotly
+####      -forcats 
 
 ```{r setup, include=FALSE}
 library(tidyr)
 library(dplyr)
 library(plotly)
+library(forcats)
 ```
 # <br>
-##### 1. First read the beers data file Beers.csv and inspect the dataframe.
+##### 1. Read the beers data file Beers.csv and inspect the dataframe (head and tail).
 
 ```{r}
 library(readr)
@@ -29,8 +36,10 @@ head(Beers)
 ```
 
 ```{r}
-Beers
+tail(Beers)
 ```
+
+##### 2. Read the breweries data file Breweries.csv and inspect the dataframe (head and tail).
 ```{r}
 library(readr)
 Breweries <- read_csv("Breweries.csv")
@@ -40,51 +49,54 @@ head(Breweries)
 ```
 
 ```{r}
-summary(Beers)
+tail(Breweries)
 ```
+##### 3. Inspect the data structures, rename columns that make sense and prepare to join the data sets. Joining could be accomplished with a left, right or full join. Full join is used in this case to preserve data from both tables.
 ```{r}
-summary(Breweries)
+str(Breweries)
 ```
 
 ```{r}
-names(Beers)
+str(Beers)
 ```
 ```{r}
 names(Breweries)
+```
+##### Renamed Brewery_id to match the Brew_ID inthe Breweries dataset.
+```{r}
+names(Beers)
 ```
 ```{r}
 Beers <- rename(Beers, Brew_ID = Brewery_id)
 names(Beers)
 ```
-
+##### Full join method.
 ```{r}
 fullData <- full_join(Breweries, Beers, by = "Brew_ID")
 ```
 
 ```{r}
-fullData
+head(fullData)
 ```
+##### Another column renaming is needed to correct the data names after the join. 
 ```{r}
-names(fullData)
-```
-```{r}
-fullData <- rename(fullData, BreweryName = Name.x, BeerName = Name.y) %>% write_csv(fullData)
+fullData <- rename(fullData, BreweryName = Name.x, BeerName = Name.y)
 names(fullData)
 ```
 ```{r}
 fullData %>%
   group_by(State) %>%
   summarise(count = n())
-
 ```
+##### Exploring the number of breweries in each state, the Breweries.csv data is used. Grouped the Breweries data table by states.
 ```{r}
 BrewStatesC <- Breweries%>%
   group_by(State)%>%
   summarise(count = n())
 ```
+
 ```{r}
 head(BrewStatesC)
-BrewStatesC
 ```
 ```{r}
 state.freq <- table(Breweries$State)
@@ -97,65 +109,56 @@ barplot(state.freq[order(state.freq)],
         ylab = "States")
 ```
 #<br> 
-# Number brewweries in each state:
+# Counting the number of brewweries in each state:
 
 ```{r}
-state.freq
-```
-
-```{r}
-names(state.freq)
-View(state.freq)
+head(state.freq)
 ```
 
 ```{r}
 sDF<-data.frame(state.freq) 
-names(sDF)
 sDF<- rename(sDF, State = Var1, Brew_Count=Freq)
 ```
 
-```{r}
-View(sDF)
-names(sDF)
-```
 #<br>
-```{r}
-p1 <- plot_ly(Breweries, x = ~State) %>% add_histogram()
-p2 <-Breweries %>%
-  dplyr::count(State) %>%
-  plot_ly(x = ~n, y = ~State) %>%
-  add_bars(marker = list(color = 'rgba(170, 17, 19, 0.9)')) %>%
-  layout(title = "Number of Breweries by State", 
-         legend = list(x = 0.03, y = 1.04)) 
- 
 
-subplot(p2) 
-```
-#<br>
-```{r}
-names(sDF)
-qsDF<-sDF[sort(sDF$Brew_Count),]
-tsDF<-qsDF %>% 
-  tibble::as_tibble(qsDF)
-tail(tsDF)
-print(qsDF)
-```
-```{r}
-p3 <- sDF %>%
-  plot_ly(x = ~NoBreweries, y = ~State ) %>%
-  add_bars(marker = list(color = 'rgba(58, 71, 80, 0.6)')) %>%
-  layout(title = "Count of Brewereies")
-  
-subplot(p3)  
-```
+##### Plot the number of breweries in each state.
 
 ```{r}
-p4 <- qsDF %>%
-  plot_ly(x = ~Brew_Count, y = ~State ) %>%
-  add_bars(marker = list(color = 'rgba(58, 71, 80, 0.6)')) %>%
-  layout(title = "Count of Brewereies")
-  
-subplot(p3)  
+p1 <- ggplot(Breweries, aes(x = fct_rev(fct_infreq(State)), fill = fct_infreq(State))) + geom_bar() + coord_flip() + theme(legend.position = "top")
 
-?add_bars
+ggplotly(p1)  
 ```
+
+##### Plot the number of beer brands from each state.
+
+```{r}
+p2 <- ggplot(fullData, aes(x = fct_rev(fct_infreq(State)), fill = fct_rev(fct_infreq(State)))) + geom_bar() + coord_flip() + theme(legend.position = "top")
+
+ggplotly(p2)
+```
+
+##### Did we have any empty rows in our data tables? Let's find out here:
+
+```{r}
+naB_Id<-sum(is.na(fullData$Brew_ID))
+naB_Nm<-sum(is.na(fullData$BreweryName))
+naB_C<-sum(is.na(fullData$City))
+naB_S<-sum(is.na(fullData$State))
+naBeer_Nm<-sum(is.na(fullData$BeerName))
+naBeer_Id<-sum(is.na(fullData$Beer_ID))
+naABV<-sum(is.na(fullData$ABV))
+naIBU<-sum(is.na(fullData$IBU))
+naStyle<-sum(is.na(fullData$Style))
+naOunces<-sum(is.na(fullData$Ounces))
+
+
+naResults = paste(naB_Id, naB_Nm, naB_C, naB_S, naBeer_Nm, naBeer_Id, naABV, naIBU, naStyle, naOunces, sep = ", ")
+
+print(naResults)
+```
+```{r}
+
+```
+
+
