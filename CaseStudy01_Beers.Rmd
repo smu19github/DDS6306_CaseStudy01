@@ -2,11 +2,13 @@
 title: "Evaluation of Craft Breweries in the <br> United States of America <br>"
 author: "<br>Heindel Adu, Amy Markmum and Gabriel Gonzalez <br>- AGH Data Consult Inc."
 date: "Spring 2019"
-output: 
-  html_document: 
+output:
+  html_document:
     highlight: pygments
     keep_md: yes
     theme: united
+    always_allow_html: yes
+  pdf_document: default
 ---
 #
 #<br>
@@ -25,6 +27,11 @@ library(tidyr)
 library(dplyr)
 library(plotly)
 library(forcats)
+library(ggmap)
+library(maps)
+library(ggplot2)
+
+register_google(key = 'AIzaSyBODcDvf37-5ae26FN1Oe5uStngqlccrXc')
 ```
 # <br>
 ##### 1. Read the beers data file Beers.csv and inspect the dataframe (head and tail).
@@ -86,13 +93,15 @@ names(fullData)
 ```{r}
 fullData %>%
   group_by(State) %>%
-  summarise(count = n())
+  summarise(count = n())%>%
+  arrange(desc(count))
 ```
 ##### Exploring the number of breweries in each state, the Breweries.csv data is used. Grouped the Breweries data table by states.
 ```{r}
 BrewStatesC <- Breweries%>%
   group_by(State)%>%
-  summarise(count = n())
+  summarise(count = n())%>%
+  arrange(desc(count))
 ```
 
 ```{r}
@@ -125,7 +134,8 @@ sDF<- rename(sDF, State = Var1, Brew_Count=Freq)
 ##### Plot the number of breweries in each state.
 
 ```{r}
-p1 <- ggplot(Breweries, aes(x = fct_rev(fct_infreq(State)), fill = fct_infreq(State))) + geom_bar() + coord_flip() + theme(legend.position = "top")
+p1 <- ggplot(Breweries, aes(x = fct_rev(fct_infreq(State)), fill = fct_infreq(State))) + geom_bar() + coord_flip() + theme(axis.title.x=element_blank(),                                                                                                                   axis.title.y=element_blank(),legend.position = "none")
+
 
 ggplotly(p1)  
 ```
@@ -133,7 +143,8 @@ ggplotly(p1)
 ##### Plot the number of beer brands from each state.
 
 ```{r}
-p2 <- ggplot(fullData, aes(x = fct_rev(fct_infreq(State)), fill = fct_rev(fct_infreq(State)))) + geom_bar() + coord_flip() + theme(legend.position = "top")
+p2 <- ggplot(fullData, aes(x = fct_rev(fct_infreq(State)), fill = fct_rev(fct_infreq(State)))) + geom_bar()  + theme(legend.position = "none") +
+  labs( title = "", x = "none", y = "Count of Beer") + theme(axis.title.x=element_blank(),                                                                                                                   axis.title.y=element_blank(),legend.position = "none")
 
 ggplotly(p2)
 ```
@@ -158,7 +169,134 @@ naResults = paste(naB_Id, naB_Nm, naB_C, naB_S, naBeer_Nm, naBeer_Id, naABV, naI
 print(naResults)
 ```
 ```{r}
+names(fullData)
 
 ```
 
+```{r}
+select(fullData, State, ABV, IBU)
+
+```
+```{r}
+Breweries %>%
+  group_by(State) %>%
+  tally(sort = TRUE)
+```
+```{r}
+fullData %>%
+  group_by(State) %>%
+  summarise(state_count = n()) %>%
+  arrange(desc(state_count))
+```
+
+```{r}
+mFD <- fullData %>%
+  group_by(State) %>%
+  summarise_each(funs(mean), mean_ABV = ABV, mean_IBU = IBU) %>%
+  arrange(desc(mean_ABV))
+```
+
+```{r}
+ggplot(fullData, aes(x = ABV)) + 
+  geom_bar(na.rm = T) + 
+  theme_grey() + 
+   coord_flip()
+```
+```{r}
+p11<-ggplot(fullData, aes(x = IBU, fill = "red")) + 
+  geom_bar(na.rm = T) + 
+  scale_color_brewer("Blues")
+ggplotly(p11)
+```
+
+```{r}
+fullData %>%
+  group_by(State) %>%
+  summarise_each(funs(min, max), ABV) 
+```
+
+```{r}
+mFDt<- data.frame(fullData %>%
+  group_by(State) %>%
+  summarise ( min_ABV =min(ABV), mean_ABV = mean(ABV), max_ABV = max(ABV)) %>%
+  arrange(desc(max_ABV)))
+```
+
+```{r}
+mIBU<- fullData %>%
+  group_by(State) %>%
+    summarise (min_IBU =min(IBU), mean_IBU = mean(IBU), max_IBU = max(IBU)) %>%
+  arrange(desc(max_IBU))
+```
+
+
+```{r}
+fullData %>%
+    group_by(BreweryName) %>%
+    summarise ( min_IBU =min(IBU), mean_IBU = mean(IBU), max_IBU = max(IBU)) %>%
+  arrange(desc(max_IBU))
+```
+```{r}
+coef(lm(IBU ~ ABV, data = fullData))
+```
+
+
+
+#### Colored by State
+```{r}
+ggplot(fullData, aes(ABV, IBU, colour = State)) +
+     geom_point(na.rm = T) +
+  geom_abline(intercept = -34.09865, slope = 1282.037)
+```
+```{r}
+ggplot(fullData, aes(ABV, IBU, colour = ABV)) +
+     geom_point(aes(colour = ABV), na.rm = T) +
+  geom_abline(intercept = -34.09865, slope = 1282.037)
+```
+#### Color by state
+```{r}
+ggplot(fullData, aes(ABV, IBU, colour = State)) +
+  facet_wrap(~ State) +
+    geom_point(na.rm = T) +
+  geom_abline(intercept = -34.09865, slope = 1282.037) 
+```
+#### Color by alcohol volume
+
+```{r}
+ggplot(fullData, aes(ABV, IBU, colour = State)) +
+  facet_wrap(~ State) +
+    geom_point(aes(colour = ABV),na.rm = TRUE) +
+  geom_abline(intercept = -34.09865, slope = 1282.037)
+```
+
+
+```{r}
+ggplot(fullData, aes(ABV, IBU, colour = State)) +
+  facet_wrap(~ Style) +
+    geom_point(aes(colour = ABV),na.rm = TRUE) +
+  geom_abline(intercept = -34.09865, slope = 1282.037)
+```
+
+```{r}
+ggplot(fullData, aes(State, ABV)) +
+  geom_boxplot(na.rm = T)
+```
+```{r}
+ggplot(fullData, aes(State, IBU)) +
+  geom_boxplot(na.rm = T) 
+```
+
+```{r}
+ggplot(fullData, aes(ABV, IBU, colour = ABV)) +
+     geom_point(aes(colour = ABV), na.rm = T) +
+  geom_abline(intercept = -34.09865, slope = 1282.037) + 
+  geom_smooth(method = lm, se = T, na.rm = T)
+```
+#####Density map of ABV vs IBU. 
+```{r}
+dplot<-ggplot(fullData, aes(ABV, IBU, colour = ABV)) +
+     geom_point( na.rm = T)
+
+dplot + stat_density_2d(aes(fill= ..level.., alpha = 0.75 ) , na.rm = T, geom = "polygon")
+```
 
