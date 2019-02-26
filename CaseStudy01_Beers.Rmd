@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD
 title: "Evaluation of Craft Breweries in the <br> United States of America <br>"
 author: "<br>Heindel Adu, Amy Markmum and Gabriel Gonzalez <br>- AGH Data Consult Inc."
 date: "Spring 2019"
@@ -9,20 +10,16 @@ output:
     theme: united
     always_allow_html: yes
   pdf_document: default
+=======
+title: "CaseStudy01_Beers"
+author: "AMarkum"
+date: "2/24/2019"
+output: html_document
+>>>>>>> 8dc4c824c1488b586e2922e2198a1dca639cd6ea
 ---
-#
-#<br>
-#
-
-#### Load the necessary library packages prior to loading the data. 
-#### Packages used include : 
-####   <em>  -tidyr
-####   <em>  -dplyr
-####   <em>  -plotly
-####      -plotly
-####      -forcats 
 
 ```{r setup, include=FALSE}
+<<<<<<< HEAD
 library(tidyr)
 library(dplyr)
 library(plotly)
@@ -32,56 +29,29 @@ library(maps)
 library(ggplot2)
 
 register_google(key = 'AIzaSyBODcDvf37-5ae26FN1Oe5uStngqlccrXc')
-```
-# <br>
-##### 1. Read the beers data file Beers.csv and inspect the dataframe (head and tail).
-
-```{r}
-library(readr)
-Beers <- read_csv("Beers.csv")
-head(Beers)
+=======
+knitr::opts_chunk$set(echo = TRUE)
+>>>>>>> 8dc4c824c1488b586e2922e2198a1dca639cd6ea
 ```
 
-```{r}
-tail(Beers)
-```
+## DDS6306_CaseStudy01
+Git repository project entitled "Case Study 1." Members of this project include Heindel Adu, Gabriel Gonzales, and Amy Markum. 
 
-##### 2. Read the breweries data file Breweries.csv and inspect the dataframe (head and tail).
-```{r}
-library(readr)
-Breweries <- read_csv("Breweries.csv")
-```
-```{r}
-head(Breweries)
-```
+## Introduction: This presentation provides an overview of exactly what type of manipulations were performed on two combined data sets (Beer by State and Breweries by State). Client has requested answers to the five following questions:
 
-```{r}
-tail(Breweries)
-```
-##### 3. Inspect the data structures, rename columns that make sense and prepare to join the data sets. Joining could be accomplished with a left, right or full join. Full join is used in this case to preserve data from both tables.
-```{r}
-str(Breweries)
-```
+### Number of Breweries per state
+### Number of NA values returned for each data set
+### Median ABV and IBU counts for each state, and provide a comparative bar chart
+### States with maximum ABV and IBU, respectively
+### Determination of any relationship between ABV and IBU, and provide comparative scatter plot
 
-```{r}
-str(Beers)
-```
-```{r}
-names(Breweries)
-```
-##### Renamed Brewery_id to match the Brew_ID inthe Breweries dataset.
-```{r}
-names(Beers)
-```
-```{r}
-Beers <- rename(Beers, Brew_ID = Brewery_id)
-names(Beers)
-```
-##### Full join method.
-```{r}
-fullData <- full_join(Breweries, Beers, by = "Brew_ID")
-```
+## First, it is necessary to merge the tables using a specific code in r
+### Brew_Beer_Table <- right_join(Breweries, Beers, by="Brew_ID")
 
+## Second, it's a good idea to save your file before manipulating the data, in case you need to return to the original data
+### write.csv(Brew_Beer_Table, file = "Breweries_Beer.csv")
+
+<<<<<<< HEAD
 ```{r}
 head(fullData)
 ```
@@ -123,49 +93,66 @@ barplot(state.freq[order(state.freq)],
 ```{r}
 head(state.freq)
 ```
+=======
+## Third, you should rename all columns to be easily human readable
+### names(Brew_Beer_Table) <- c("Brewery_ID", "Brewery_Name", "City", "State", "Beer_Name", "Beer_ID", "ABV", "IBU", "Beer_Style", "Ounces")
+>>>>>>> 8dc4c824c1488b586e2922e2198a1dca639cd6ea
 
-```{r}
-sDF<-data.frame(state.freq) 
-sDF<- rename(sDF, State = Var1, Brew_Count=Freq)
-```
+## Any data should be sorted to assist in understanding the data set, in this case sorted first by Brewery ID, then by ABV (ascending)
+### attach(Brew_Beer_Table)
+### SortedBreweryTable <- Brew_Beer_Table[order(Brewery_ID, ABV), ]
+### write.csv(SortedBreweryTable, file = "Breweries_Beer.csv")
 
-#<br>
+## It's always a good idea to review your dataset to ensure everything is as it should be
+### head(SortedBreweryTable, 10)
+### tail(SortedBreweryTable, 10)
 
-##### Plot the number of breweries in each state.
+## Next we begin to answer the client's questions: Identify all of the NA's: (62 in the ABV column, 1005 in IBU)
+### sapply(SortedBreweryTable, function(x) sum(is.na(x)))
 
+<<<<<<< HEAD
 ```{r}
 p1 <- ggplot(Breweries, aes(x = fct_rev(fct_infreq(State)), fill = fct_infreq(State))) + geom_bar() + coord_flip() + theme(axis.title.x=element_blank(),                                                                                                                   axis.title.y=element_blank(),legend.position = "none")
 
+=======
+## Then identify how many breweries are in each state
+### StateBreweryTotals <- SortedBreweryTable %>% group_by(State) %>% summarize(count=n())
+>>>>>>> 8dc4c824c1488b586e2922e2198a1dca639cd6ea
 
-ggplotly(p1)  
-```
+## Any data that is separated out and may be needed for later mainpulation should be stored in its own file
+###write.csv(StateBreweryTotals, file = "Breweries-State.csv")
 
-##### Plot the number of beer brands from each state.
+## We provide a barplot indicating the number of breweries per state
+### ggplot(StateBreweryTotals, aes(x=State, y=count)) + geom_bar(stat="identity")
 
+<<<<<<< HEAD
 ```{r}
 p2 <- ggplot(fullData, aes(x = fct_rev(fct_infreq(State)), fill = fct_rev(fct_infreq(State)))) + geom_bar()  + theme(legend.position = "none") +
   labs( title = "", x = "none", y = "Count of Beer") + theme(axis.title.x=element_blank(),                                                                                                                   axis.title.y=element_blank(),legend.position = "none")
+=======
+## Identify the overall median ABV and IBU counts
+### ABV <- Breweries_Beer$ABV
+### median(ABV, na.rm = TRUE)
+>>>>>>> 8dc4c824c1488b586e2922e2198a1dca639cd6ea
 
-ggplotly(p2)
-```
+### IBU <- Breweries_Beer$IBU
+### median(IBU, na.rm = TRUE)
 
-##### Did we have any empty rows in our data tables? Let's find out here:
+## Split out your data so you can work with your ABV & IBU variables by state
+### ABVState <-split(Breweries_Beer$ABV, Breweries_Beer$State)
+### IBUState <-split(Breweries_Beer$IBU, Breweries_Beer$State)
 
-```{r}
-naB_Id<-sum(is.na(fullData$Brew_ID))
-naB_Nm<-sum(is.na(fullData$BreweryName))
-naB_C<-sum(is.na(fullData$City))
-naB_S<-sum(is.na(fullData$State))
-naBeer_Nm<-sum(is.na(fullData$BeerName))
-naBeer_Id<-sum(is.na(fullData$Beer_ID))
-naABV<-sum(is.na(fullData$ABV))
-naIBU<-sum(is.na(fullData$IBU))
-naStyle<-sum(is.na(fullData$Style))
-naOunces<-sum(is.na(fullData$Ounces))
+## Identify your medians by state (example given)
+### median(ABVState[["CA"]], na.rm = TRUE)
+### median(IBUState[["CA]], na.rm = TRUE)
 
+## Create your new file with your states/median ABV information
+### write.csv(ABVStates, file = "ABVStates.csv")
 
-naResults = paste(naB_Id, naB_Nm, naB_C, naB_S, naBeer_Nm, naBeer_Id, naABV, naIBU, naStyle, naOunces, sep = ", ")
+## Create your new file with your states/median IBU information
+### write.csv(IBUStates, file = "IBUStates.csv")
 
+<<<<<<< HEAD
 print(naResults)
 ```
 ```{r}
@@ -299,4 +286,16 @@ dplot<-ggplot(fullData, aes(ABV, IBU, colour = ABV)) +
 
 dplot + stat_density_2d(aes(fill= ..level.., alpha = 0.75 ) , na.rm = T, geom = "polygon")
 ```
+=======
+## Provide a summary of the ABV statistics
+### str(ABVStates)
 
+## Provide a scatter plot of your ABV & IBU Levels
+### plot(IBULvl, ABVLvl, main = "ABV & IBU Comparison Chart", xlab="IBU Levels", ylab="ABV Levels", pch = 19, frame = FALSE)
+
+## Provide a comparative bar chart of the median ABV & IBU Levels
+### data <- data.frame(States, ABVLvl, IBULvl)
+### plot_ly(data, x = ~States, y = ~ABVLvl, type = "bar", name = "ABV Level") %>% add_trace(y=~IBULvl, name="IBU Level") %>% layout(yaxis = list(title = "ABV&IBU Comparison"), barmode = "Group")
+>>>>>>> 8dc4c824c1488b586e2922e2198a1dca639cd6ea
+
+## NOTE: Although this was requested, a comparative barchart is inappropriate for ABV & IBU Levels due to the difference in scale
